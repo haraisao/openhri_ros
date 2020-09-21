@@ -1,0 +1,19 @@
+<package format="2">
+  <name>openhri_ros</name>
+  <version>1.0.0</version>
+  <description>
+	  This OpenHRI for ROS
+  </description>
+  <maintainer email="isao@hara-jp.com">Isao Hara</maintainer>
+  <author email="isao@hara-jp.com">Isao Hara</author>
+  <license>Eclipse Public Licence v.1.0</license>
+  <url type="website">http://hara-jp.com/</url>
+  <url type="repository">https://github.com/haraisao/oprnhri_ros</url>
+ 
+  <buildtool_depend>catkin</buildtool_depend> 
+
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>audio_common_msgs</depend>
+
+</package>
