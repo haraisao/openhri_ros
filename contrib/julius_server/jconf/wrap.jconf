@@ -1,0 +1,31 @@
+-d model/lang_m/bccwj.60k.bingram  # 単語2-gram,3-gramファイル(バイナリ形式）
+#-v model/lang_m/bccwj.60k.htkdic   # 単語辞書ファイル
+-b 1500                            # 第1パスのビーム幅（ノード数
+-b2 100                            # 第2パスの仮説数ビームの幅（仮説数）
+-s 500                             # 第2パスの最大スタック数 (仮説数)
+-m 10000                           # 第2パスの仮説オーバフローのしきい値
+-n 30                              # 第2パスで見つける文の数（文数）
+-output 5                          # 第2パスで見つかった文のうち出力する数 （文数）
+-zmeanframe                        # フレーム単位のDC成分除去を行う (HTKと同処理)
+-rejectshort 800                   # 指定ミリ秒以下の長さの入力を棄却する
+  
+#-h model/phone_m/jnas-tri-3k16-gid.binhmm    # 音響HMM定義ファイル
+#-hlist model/phone_m/logicalTri-3k16-gid.bin # 論理的に出現しうる triphone -> 定義されている triphoneの対応を指定した「HMMListファイル」
+#-lmp  10 0  # 言語重みと挿入ペナルティ: 第1パス(2-gram)
+#-lmp2 10 0  # 言語重みと挿入ペナルティ: 第2パス(3-gram)
+
+-h model/dnn/binhmm.SID
+-hlist model/dnn/logicalTri.bin
+-v model/lang_m/bccwj.60k.pdp.htkdic
+
+-lmp  14 0
+-lmp2 14 0
+
+-pausesegment
+-nostrip
+-spmodel  sp
+-iwcd1 max
+-gprune safe
+-forcedict
+-smpFreq 16000
+

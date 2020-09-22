@@ -1,0 +1,11 @@
+
+-h model/dnn/binhmm.SID
+-hlist model/dnn/logicalTri.bin
+-v model/lang_m/bccwj.60k.pdp.htkdic
+
+-lmp  14 0
+-lmp2 14 0
+
+
+-dnnconf julius.dnnconf
+
