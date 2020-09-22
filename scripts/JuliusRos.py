@@ -33,9 +33,9 @@ from lxml import *
 from bs4 import BeautifulSoup
 from xml.dom.minidom import Document
 
+import openhri
 from openhri.julius.parsesrgs import *
 from openhri.julius.config import config
-import openhri.utils as utils
 
 import rospy
 from std_msgs.msg import String
@@ -105,7 +105,6 @@ def read_file_contents(fname, encoding='utf-8'):
     f=open(fname,'r', encoding=encoding)
     contents = f.read()
     f.close()
-    print(contents)
     return contents
   except:
     return ""
@@ -539,22 +538,21 @@ class JuliusWrap(threading.Thread):
 #
 #  JuliusRos
 #
-class JuliusRos(object):
+class JuliusRos(openhri.OpenHRI_Component):
   #
   #  Constructor
   #
   def __init__(self, manager, grammar=''):
+    openhri.OpenHRI_Component.__init__(self, manager)
     self._lang = 'ja'
     self._srgs = None
     self._j = None
     self._mode = 'grammar'
-    self._config = manager._config
     self.params = {}
-    self._manager = manager
+
     self._properties = None
+    self._grammar_name=grammar
 
-
-    self._copyrights = []
     self._copyrights.append( read_file_contents(os.path.join( self._config._basedir, "doc", "julius_copyright.txt")))
     self._copyrights.append( read_file_contents(os.path.join( self._config._basedir, "doc", "voxforge_copyright.txt")))
 
@@ -577,28 +575,16 @@ class JuliusRos(object):
     self._jconf_file="main.jconf"
     #self.bindParameter("jconf_file", self._jconf_file, "main.jconf")
 
-    for c in self._copyrights:
-      for l in c.strip('\n').split('\n'):
-        rospy.loginfo('  '+l)
-      rospy.loginfo('')
+    self.show_copyrights()
 
     return True
 
   #
-  #
-  def bindParameter(self, name, var, value, func=None):
-    var = value
+  # call by manager.shutdown
+  def onShutdown(self):
+    print("\n]]]] Shutdown Julius: %s" % self._grammar_name)
+    self.kill_julius()
     return
-
-  #
-  #  OnFinalize
-  #
-  def onFinalize(self):
-    if self._j:
-      self._j.terminate()
-      self._j.join()
-      self._j = None
-    return True
 
   #
   #  OnActivate
@@ -638,14 +624,11 @@ class JuliusRos(object):
   #  OnDeactivate
   #
   def onDeactivate(self, ec_id):
-    if self._j:
-      self._j.terminate()
-      self._j.join()
-      self._j = None
+    self.kill_julius()
     return True
 
-  #
-  #  OnData (Callback from Subscriber)
+  ##############################################
+  #  OnData (Callback for Subscriber)
   #
   def onData(self, msg):
     if self._j:
@@ -658,12 +641,6 @@ class JuliusRos(object):
     if self._j:
       self._j.switchgrammar(msg.data)
     return
-
-  #
-  #  OnExecute (Do nothing)
-  #
-  def onExecute(self, ec_id):
-      return True
 
   #
   #  OnResult (call by JuliusWrapper)
@@ -718,8 +695,10 @@ class JuliusRos(object):
            rospy.loginfo("#%s: %s (%s)" % (s['rank'], " ".join(text),str(score)))
 
           listentext.appendChild(hypo)
+
         data = doc.toxml(encoding="utf-8")
         self._julius_result.publish(data)
+
         #rospy.loginfo(data.decode('utf-8', 'backslashreplace'))
         #self._outdata.data = data.decode('unicode_escape')
         #self._outport.write()
@@ -757,24 +736,51 @@ class JuliusRos(object):
     return
 
   #
-  #
+  # Kill subprocess
   def kill_julius(self):
     if self._j:
       self._j.terminate()
       self._j.join()
       self._j = None
+    return
 
 #
 #  JuliusRTCManager Class
 #
-class JuliusRosManager:
+class JuliusRosManager(openhri.OpenHRI_Manager):
   #
   #  Constructor
   #
   def __init__(self):
-    parser = utils.MyParser(version=__version__, usage="%prog [srgsfile]",
-                            description=__doc__)
-    utils.addmanageropts(parser)
+    openhri.set_manager_info(__version__, "%prog [srgfile]", __doc__)
+
+    openhri.OpenHRI_Manager.__init__(self, name='JuliusRos',
+                                     conf_name='julius.conf')
+
+    #
+    #
+    if self._opts.guimode == True:
+      sel = askopenfilenames(title="select W3C-SRGS grammar files")
+      if sel is not None:
+        self._args.extend(sel)
+    
+    if self._opts.dictation_mode == False and len(self._args) == 0:
+      self._parser.error("wrong number of arguments")
+      sys.exit(1)
+           
+    if self._opts.dictation_mode == True:
+      self._args.extend(['dictation'])
+
+    #
+    #
+    self._rebuid_lexicon= self._opts.rebuild_lexicon
+    self._grammars = self._args
+    self._config = config(config_file=self._opts.configfile)
+
+
+  #
+  #
+  def add_options(self, parser):
     parser.add_option('-g', '--gui', dest='guimode', action="store_true",
                       default=False,
                       help='show file open dialog in GUI')
@@ -788,64 +794,9 @@ class JuliusRosManager:
                       action="store_true",
                       default=False,
                       help='rebuild lexicon')
-    try:
-      opts, args = parser.parse_args()
-    except optparse.OptionError as e:
-      rospy.logerr('OptionError:', e , file=sys.stderr)
-      sys.exit(1)
-
-    if opts.guimode == True:
-      sel = askopenfilenames(title="select W3C-SRGS grammar files")
-      if sel is not None:
-        args.extend(sel)
-    
-    if opts.dictation_mode == False and len(args) == 0:
-      parser.error("wrong number of arguments")
-      sys.exit(1)
-           
-    if opts.dictation_mode == True:
-      args.extend(['dictation'])
-
-    if opts.configfile is None:
-      try:
-        cfgname = os.environ['OPENHRI_ROOT'] + "/etc/julius.conf".replace('/', os.path.sep)
-        if os.path.exists(cfgname):
-          opts.configfile = cfgname
-      except:
-        pass
-
-    self._rebuid_lexicon=opts.rebuild_lexicon
-
-    self._grammars = args
-    self._config = config()
-    self._comp = {}
-
-    rospy.init_node('JuliusRosManager', anonymous=True)
-    self.moduleInit()
-
-  #
-  #  Start component
-  #
-  def start(self):
-    for name in self._comp:
-      self._comp[name].onActivated()
-
-    rospy.spin()
     return
 
-  def create_component(self, grm):
-    comp=JuliusRos(self, grm)
-    comp.onInitialize()
-    return comp
 
-  #
-  #  shutdown manager
-  #
-  def shutdown(self):
-    for name in self._comp:
-      print("\n]]]] Shutdown Julius: %s" % name)
-      self._comp[name].kill_julius()
-    return
 
   #
   #  Initialize node
@@ -853,8 +804,10 @@ class JuliusRosManager:
   def moduleInit(self):
     for a in self._grammars:
       rospy.loginfo("Create JuliusRos: %s", a)
-      self._comp[a]=self.create_component(a)
-      if a == 'dictation':
+      self._comp[a]=self.create_component(JuliusRos, a)
+      if a is None:
+        return
+      elif a == 'dictation':
         self._comp[a]._mode='dictation'
         self._comp[a]._lang = 'ja'
       elif a == 'dictation_en':
@@ -870,6 +823,7 @@ g_manager = None
 
 def main():
   g_manager = JuliusRosManager()
+  g_manager.init_node()
   g_manager.start()
 
   g_manager.shutdown()

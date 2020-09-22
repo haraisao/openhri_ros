@@ -42,6 +42,28 @@ def native_path(dirname):
 
 #
 #
+def get_apikey(fname):
+  try:
+    with open(fname) as f:
+      key = f.readline().strip()
+      return key
+  except:
+    pass
+  return ""
+
+#
+#
+def openhri_path(filename):
+  try:
+    pname = os.environ['OPENHRI_ROOT']+native_path(filename)
+    if os.path.exists(pname):
+      return pname
+  except:
+    pass
+  return None
+
+#
+#
 class config_base(object):
   def __init__(self, hri_dir="", config_name="openhri.conf", config_file=None):
     self._platform = platform.system()

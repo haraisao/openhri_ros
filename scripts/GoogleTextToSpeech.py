@@ -28,15 +28,15 @@ from pydub.silence import *
 
 import openhri.utils as utils
 import openhri.google_tts.config as config
+import openhri
+from openhri import __version__
 
 import rospy
 from audio_common_msgs.msg import AudioData
 from std_msgs.msg import String
 
-from openhri import __version__
 
 __doc__ = 'Google Text-to-Speech component.'
-
 
 _EffectsProfile=('wearable', 'handset', 'headphone', 'small-bluetooth-speaker', 'medium-bluetooth-speaker', 'large-home-entertainment', 'large-automotive', 'telephony')
 
@@ -135,15 +135,14 @@ class GoogleTextToSpeechWrap(object):
 #
 #  GoogleTextToSpeechRos Class
 #
-class GoogleTextToSpeechRos(object):
+class GoogleTextToSpeechRos(openhri.OpenHRI_Component):
   #
   #  Constructor
   #
   def __init__(self, manager):
+    openhri.OpenHRI_Component.__init__(self, manager)
     self._tts = None
-    self._copyrights=[]
     self._lang = [ "ja-JP" ]
-    self._manager = manager
 
 
   #
@@ -162,20 +161,9 @@ class GoogleTextToSpeechRos(object):
     self._outdata = AudioData()
     self._outport = rospy.Publisher('/audio_play/audio', AudioData, queue_size=10)
 
-    rospy.loginfo("This component depends on following softwares and data:")
-    rospy.loginfo('')
-
-    for c in self._copyrights:
-      for l in c.strip('\n').split('\n'):
-        rospy.loginfo('  '+l)
-      rospy.loginfo('')
-
-    return True
-
-  #
-  #  OnFinalize
-  #
-  def onFinalize(self):
+    #
+    #
+    self.show_copyrights()
     return True
 
   #
@@ -189,12 +177,6 @@ class GoogleTextToSpeechRos(object):
     else:
       print("=== No API KEY ===")
       return False
-
-  #
-  #  OnDeactivate
-  #
-  def onDeactivate(self, ec_id=0):
-    return True
 
   #
   #  OnData (Callback from DataListener)
@@ -220,77 +202,26 @@ class GoogleTextToSpeechRos(object):
     return
 
 
-  #
-  #  OnExecute (Do nothing)
-  #
-  def onExecute(self, ec_id=0):
-    return True
-
 #
 #  Manager Class
 #
-class GoogleTextToSpeechManager:
+class GoogleTextToSpeechManager(openhri.OpenHRI_Manager):
   #
   #  Constructor
   #
   def __init__(self):
+    openhri.set_manager_info(__version__, "%prog", __doc__)
 
-    parser = utils.MyParser(version=__version__, description=__doc__)
-    utils.addmanageropts(parser)
+    openhri.OpenHRI_Manager.__init__(self, name='google_tts',
+                                     conf_name='google_tts.conf')
 
-    try:
-      opts, args = parser.parse_args()
-    except optparse.OptionError as e:
-      print( 'OptionError:', e)
-      sys.exit(1)
-
-    if opts.configfile is None:
-      try:
-        cfgname = os.environ['OPENHRI_ROOT'] + "/etc/google_tts.conf".replace('/', os.path.sep)
-        if os.path.exists(cfgname):
-          opts.configfile = cfgname
-      except:
-        pass
-
-    self._comp = None
-    self._config = config()
-
-    rospy.init_node('GoogleTextSpeech', anonymous=True)
-    self.moduleInit()
-
-  def create_component(self, name):
-    try:
-      cls = globals()[name]
-      comp = cls(self)
-      comp.onInitialize()
-      return comp
-    except:
-      print("Fail to create component")
-      traceback.print_exc()
-
-    return None
-
-
-  #
-  #  Start component
-  #
-  def start(self):
-    if self._comp:
-      self._comp.onActivated()
-      rospy.spin()
-    return
-
-
-  def shutdown(self):
-    if self._comp:
-      self._comp.onFinalize()
-    return
+    self._config = config(config_file=self._opts.configfile)
 
   #
   #  Initialize rtc
   #
   def moduleInit(self):
-    self._comp = self.create_component("GoogleTextToSpeechRos")
+    self._comp['GoogleTTS'] = self.create_component(GoogleTextToSpeechRos)
     return
 
 #
@@ -301,6 +232,7 @@ g_manager = None
 #
 def main():
   g_manager = GoogleTextToSpeechManager()
+  g_manager.init_node()
   g_manager.start()
   g_manager.shutdown()
 

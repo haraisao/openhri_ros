@@ -23,8 +23,7 @@ import sys
 import os
 import platform
 import traceback
-import openhri.utils as utils
-from openhri.utils import native_path
+from openhri.utils import native_path, getHriDir
 import re
 
 import configparser
@@ -32,7 +31,7 @@ import configparser
 #
 #
 class config():
-  def __init__(self, hri_dir="", config_name='google_speech.conf', configfile=None):
+  def __init__(self, hri_dir="", config_name='google_speech.conf', config_file=None):
     self._platform = platform.system()
 
     if self._platform != "Windows":
@@ -42,7 +41,7 @@ class config():
     if hasattr(sys, "frozen"):
       self._basedir = os.path.dirname(sys.executable)
     else:
-      self._basedir = utils.getHriDir()
+      self._basedir = getHriDir()
 
     self._homedir = os.path.expanduser('~')
 
@@ -58,13 +57,13 @@ class config():
     else:
       hri_dir = self._basedir
 
-    if configfile is None:
-        configfile = os.path.join(hri_dir, 'etc', config_name)
+    if config_file is None:
+        config_file = os.path.join(hri_dir, 'etc', config_name)
 
     # config
-    if os.path.exists(configfile) :
+    if os.path.exists(config_file) :
       self._configfile = configparser.ConfigParser()
-      self._configfile.read(configfile)
+      self._configfile.read(config_file)
     else:
       self._configfile={}
 

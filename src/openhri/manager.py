@@ -22,27 +22,43 @@ import rospy
 
 
 #
-#   OpenHRI_Componnet Class
+#   OpenHRI_Component Class
 #
-class OpenHRI_Componnet(object):
+class OpenHRI_Component(object):
   #
   #  Constructor
   #
   def __init__(self, manager):
-    self._lang = 'ja'
+    self._lang = 'ja-JP'
     self._manager = manager
     self._properties = None
+    self._config = manager._config
 
     self._copyrights = []
+
+  #
+  #  show Copyrights
+  def show_copyrights(self):
+    rospy.loginfo("This component depends on following softwares and data:")
+    rospy.loginfo('')
+
+    for c in self._copyrights:
+      for l in c.strip('\n').split('\n'):
+        rospy.loginfo('  '+l)
+      rospy.loginfo('')
+    return 
+
+  #
+  #  bindParameter
+  def bindParameter(self, name, var, value, func=None):
+    var = value
+    return
 
   #
   #  OnInitialize
   #
   def onInitialize(self):
-    for c in self._copyrights:
-      for l in c.strip('\n').split('\n'):
-        rospy.loginfo('  '+l)
-      rospy.loginfo('')
+    self.show_copyrights()
     return True
 
   #
@@ -76,68 +92,89 @@ class OpenHRI_Componnet(object):
     return True
 
 #
+#
+def set_manager_info(version, usage, doc):
+  global __version__, __usage__, __doc__
+  __version__=version
+  __usage__=usage
+  __doc__=doc
+  return
+
+#
 #  OpenHRI Manager Class
 #
 class OpenHRI_Manager(object):
   #
   #  Constructor
   #
-  def __init__(self, name='openhri_manager'):
-    parser = utils.MyParser(version=__version__, usage="%prog [srgsfile]",
-                            description=__doc__)
-    utils.addmanageropts(parser)
-    parser.add_option('-g', '--gui', dest='guimode', action="store_true",
-                      default=False,
-                      help='show file open dialog in GUI')
+  def __init__(self, name='openhri_manager', conf_name='openhri.conf'):
+    self._parser = MyParser(version=__version__, usage=__usage__, description=__doc__)
+    addmanageropts(self._parser)
+    self.add_options(self._parser)
 
-    parser.add_option('-D', '--dictation', dest='dictation_mode', 
-                      action="store_true",
-                      default=False,
-                      help='run with dictation mode')
-
-    parser.add_option('-r', '--rebuild-lexicon', dest='rebuild_lexicon',
-                      action="store_true",
-                      default=False,
-                      help='rebuild lexicon')
     try:
-      opts, args = parser.parse_args()
+      self._opts, args = self._parser.parse_args()
     except optparse.OptionError as e:
-      rospy.logerr('OptionError:', e , file=sys.stderr)
+      print('OptionError:', e)
       sys.exit(1)
 
-    if opts.configfile is None:
-      try:
-        cfgname = os.environ['OPENHRI_ROOT'] + "/etc/julius.conf".replace('/', os.path.sep)
-        if os.path.exists(cfgname):
-          opts.configfile = cfgname
-      except:
-        pass
+    if self._opts.configfile is None:
+      self._opts.configfile = openhri_path("/etc/"+conf_name)
 
-    self._name=name
-    self._config = config_base(config_file=opts.configfile)
+    self._name = name
+
+    self._args=[]
+    for arg in args:
+      if arg[:8] == '__name:=' :
+        self._name=arg[8:]
+      elif arg[:2] == '__':
+        pass
+      else:
+        self._args.append(arg)
+
+    self._rate = 0
     self._comp = {}
 
-    rospy.init_node(self.name, anonymous=True)
+  #
+  #
+  def add_options(self, parser):
+    return
+
+  #
+  #
+  def init_node(self):
+    rospy.init_node(self._name, anonymous=True)
     self.moduleInit()
+    return
 
   #
   #  Start component
   #
   def start(self):
     for name in self._comp:
-      self._comp[name].onActivated()
+      res=self._comp[name].onActivated()
+      if not res: return
 
-    rospy.spin()
+    if self._rate > 0:
+      self.rate = rospy.Rate(self._rate)
+      while not rospy.is_shutdown():
+        for name in self._comp:
+          self._comp[name].onExecute()
+        self.rate.sleep()
+
+    else:
+      rospy.spin()
     return
 
-  def create_component(self, name, *args):
+  #
+  #
+  def create_component(self, klass, *args):
     try:
-      cls = globals()[name]
-      comp=cls(self, *args)
+      comp=klass(self, *args)
       comp.onInitialize()
       return comp
     except:
-      print("Fail to create component %s" % name)
+      print("Fail to create component %s" % str(klass))
 
     return None
 

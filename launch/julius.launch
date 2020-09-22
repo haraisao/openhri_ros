@@ -1,0 +1,6 @@
+<launch>
+ <include file="$(find audio_capture)/launch/capture_wave.launch" />
+
+ <node pkg="openhri_ros" type="JuliusRos.py" name="julius_ros" args="dictation"  output="screen" />
+
+</launch>

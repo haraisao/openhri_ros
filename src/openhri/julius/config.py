@@ -33,7 +33,7 @@ from openhri.utils import native_path
 #
 #
 class config():
-  def __init__(self, julius_dir=""):
+  def __init__(self, julius_dir="", config_file=None):
     self._platform = platform.system()
 
     if self._platform != "Windows":
@@ -63,9 +63,12 @@ class config():
 
     # config
     #print("CONFIG:", os.path.join(self._basedir, 'etc', 'julius.cfg'))
-    if os.path.exists(os.path.join(self._basedir, 'etc', 'julius.cfg')) :
+    if config_file is None:
+      config_file = os.path.join(self._basedir, 'etc', 'julius.conf')
+
+    if os.path.exists(config_file) :
       self._configfile = configparser.ConfigParser()
-      self._configfile.read(os.path.join(self._basedir, 'etc', 'julius.cfg'))
+      self._configfile.read(config_file)
 
       self.set_runkit_ja(self._configfile, self._basedir[:2])
       self.set_runkit_en(self._configfile, self._basedir[:2])
