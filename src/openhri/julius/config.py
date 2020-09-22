@@ -119,7 +119,7 @@ class config():
       self._julius_dict_dict_en = self.runkit_en("ENVR-v5.3.dct")
       self._julius_dict_htkconf_en = self.runkit_en("wav_config")
     else:
-      self._julius_runkitdir = "/usr/local/julius-dictation-kit"
+      self._julius_runkitdir = "/usr/local/julius/dictation-kit"
 
       if self.ubuntu_osname == "precise":
         self._julius_dict_en = "/usr/share/doc/julius-voxforge/dict.gz"
@@ -128,7 +128,7 @@ class config():
 
       self._julius_voxforgedir = "/usr/share/julius-voxforge"
       self._julius_voxforgedir_de = "/usr/share/julius-voxforge-de"
-      self._julius_bin = "/usr/local/julius-dictation-kit/bin/linux/julius"
+      self._julius_bin = "/usr/local/julius/dictation-kit/bin/linux/julius"
 
       self._julius_hmm_en = self.voxforge("acoustic", "hmmdefs")
       self._julius_hlist_en = self.voxforge("acoustic", "tiedlist")
