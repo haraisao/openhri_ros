@@ -4,6 +4,7 @@ OpenHRI for ROS1
 ## Quick start
 This package is depend on following libraries:
   * Julius dictation-kit
+  * OpenJtalk ( open-jtalk, open-jtalk-mecab-naist-jdic, hts-voice-nitech-jp-atr503-m001 )
   * python-pydub
   * python-urllib3
   * python-certifi

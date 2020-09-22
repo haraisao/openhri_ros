@@ -158,12 +158,13 @@ class CloudSpeechRecogBase(threading.Thread):
       self._lock.release()
 
       if audio :
+        print("request...")
         res = self.request_speech_recog(audio)
         if res :
           for c in self._callbacks:
             c(res)
         else:
-          #print ("----")
+          print ("----")
           pass
 
     print ('CloudSpeech: exit from event loop')

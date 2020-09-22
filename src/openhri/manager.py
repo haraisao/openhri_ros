@@ -51,7 +51,14 @@ class OpenHRI_Component(object):
   #
   #  bindParameter
   def bindParameter(self, name, var, value, func=None):
-    var = value
+    try:
+      if self._config['Default'][name] :
+        var = [ self._config['Default'][name] ]
+        return
+    except:
+      pass
+
+    var = [ value ]
     return
 
   #
