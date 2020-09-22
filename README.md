@@ -1,7 +1,7 @@
 # openhri_ros
 OpenHRI for ROS1
 
-##Quick start
+## Quick start
 This package is depend on following libraries:
   * Julius dictation-kit
   * python-pydub
