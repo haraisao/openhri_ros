@@ -6,9 +6,10 @@
   </description>
   <maintainer email="isao@hara-jp.com">Isao Hara</maintainer>
   <author email="isao@hara-jp.com">Isao Hara</author>
-  <license>Eclipse Public Licence v.1.0</license>
-  <url type="website">http://hara-jp.com/</url>
-  <url type="repository">https://github.com/haraisao/oprnhri_ros</url>
+  <license>Eclipse Public Licence v2.0</license>
+  <url type="website">http://hara-jp.com/_default/ja/Software/openhri_ros.html</url>
+  <url type="website">https://github.com/haraisao/openhri_ros</url>
+  <url type="repository">https://github.com/haraisao/openhri_ros</url>
  
   <buildtool_depend>catkin</buildtool_depend> 
 
@@ -16,4 +17,14 @@
   <depend>std_msgs</depend>
   <depend>audio_common_msgs</depend>
 
+  <exec_depend>audio_capture</exec_depend>
+  <exec_depend>audio_play</exec_depend>
+
+  <exec_depend>python-pydub</exec_depend>
+  <exec_depend>python-urllib3</exec_depend>
+  <exec_depend>python-certifi</exec_depend>
+  <exec_depend>python-lxml</exec_depend>
+  <exec_depend>open-jtalk</exec_depend>
+  <exec_depend>open-jtalk-mecab-naist-jdic</exec_depend>
+  <exec_depend>hts-voice-nitech-jp-atr503-m001</exec_depend>
 </package>
