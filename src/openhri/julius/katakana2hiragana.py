@@ -16,8 +16,8 @@ http://www.opensource.org/licenses/eclipse-1.0.txt
 import re
 
 class katakana2hiragana:
-    def __init__(self):
-        self._dict = {
+  def __init__(self):
+    self._dict = {
             u'ア':u'あ',
             u'イ':u'い',
             u'ウ':u'う',
@@ -99,11 +99,16 @@ class katakana2hiragana:
             u'ュ':u'ゅ',
             u'ョ':u'ょ'
             }
-        self._regex = re.compile("|".join(map(re.escape, self._dict.keys())))
+    self._regex = re.compile("|".join(map(re.escape, self._dict.keys())))
 
-    def convert(self, text):
-        return self._regex.sub(lambda m: self._dict[m.string[m.start():m.end()]], text) 
+  #
+  #
+  def convert(self, text):
+      return self._regex.sub(lambda m: self._dict[m.string[m.start():m.end()]], text) 
 
+#
+#
+#
 def main():
     import sys, codecs
     sys.stdin = codecs.getreader('utf-8')(sys.stdin)

@@ -114,16 +114,16 @@ class config_base(object):
 #
 #  Original Parser
 #
-class MyParser(optparse.OptionParser):
+class OpenHRI_Parser(optparse.OptionParser):
+  #
+  #
   def _add_help_option (self):
-    self.add_option("-h", "--help",
-            action="help",
-            help="show this help message and exit")
+    self.add_option("-h", "--help", action="help",
+                    help="show this help message and exit")
 
   def _add_version_option (self):
-    self.add_option("--version",
-            action="version",
-            help="show program's version number and exit")
+    self.add_option("--version", action="version",
+                    help="show program's version number and exit")
 
   def format_epilog(self, formatter):
     if self.epilog is not None:
@@ -158,7 +158,8 @@ def askopenfilename(title=''):
   root = tkinter.Tk()
   root.withdraw()
   fTyp = [("","*")]
-  fname = filedialog.askopenfilename(filetypes = fTyp, initialdir = "", title=title)
+  fname = filedialog.askopenfilename(filetypes = fTyp,
+                                      initialdir = "", title=title)
   return fname
 #
 #  Selector dialog for multi-files reading
@@ -167,7 +168,8 @@ def askopenfilenames(title=''):
   root = tkinter.Tk()
   root.withdraw()
   fTyp = [("","*")]
-  fname = filedialog.askopenfilenames(filetypes = fTyp, initialdir = "", title=title)
+  fname = filedialog.askopenfilenames(filetypes = fTyp,
+                                      initialdir = "", title=title)
   return fname
 #
 #  Selector dialog for saving file
@@ -175,28 +177,33 @@ def askopenfilenames(title=''):
 def asksaveasfile():
   root = tkinter.Tk()
   fTyp = [("","*")]
-  filename =  filedialog.asksaveasfilename(initialdir = "", title = "Save as", filetypes = fTyp)
+  filename =  filedialog.asksaveasfilename(initialdir = "",
+                                           title = "Save as", filetypes = fTyp)
   return fname
 
 #
 #  option definition for rtm_manager
 #
 def addmanageropts(parser):
-  parser.add_option('-a', '--manager-service', dest='managerservice', action='store_true',
-            default=False,
-            help='enable manager to be controlled as corba servant')
-  parser.add_option('-f', '--config-file', dest='configfile', action='store',
-            default=None,
-            help='specify custom configuration file')
-  parser.add_option('-o', '--option', dest='option', action='append',
-            default=None,
-            help='specify custom configuration parameter')
-  parser.add_option('-p', '--port', dest='port', action='store',
-            default=None,
-            help='specify custom corba endpoint')
-  parser.add_option('-d', '--master-mode', dest='mastermode', action='store_true',
-            default=False,
-            help='configure manager to be master')
+  parser.add_option('-a', '--manager-service', dest='managerservice',
+                    action='store_true', default=False,
+                    help='enable manager to be controlled as corba servant')
+
+  parser.add_option('-f', '--config-file', dest='configfile',
+                    action='store', default=None,
+                    help='specify custom configuration file')
+
+  parser.add_option('-o', '--option', dest='option',
+                    action='append', default=None,
+                    help='specify custom configuration parameter')
+
+  parser.add_option('-p', '--port', dest='port',
+                    action='store', default=None,
+                    help='specify custom corba endpoint')
+
+  parser.add_option('-d', '--master-mode', dest='mastermode',
+                    action='store_true', default=False,
+                     help='configure manager to be master')
 #
 #  option definition for rtm_manager
 #
@@ -223,6 +230,7 @@ def genmanagerargs(opt):
 def getHriDir():
   if 'OPENHRI_ROOT' in os.environ and os.environ['OPENHRI_ROOT']:
     return os.environ['OPENHRI_ROOT']
+
   if 'ROS_ROOT' in os.environ and os.environ['ROS_ROOT']:
     if os.path.exists(os.path.dirname(os.environ['ROS_ROOT'])+"/openhri"):
       return os.path.dirname(os.environ['ROS_ROOT'])+"/openhri"

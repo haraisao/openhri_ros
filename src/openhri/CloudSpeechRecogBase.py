@@ -13,9 +13,8 @@ Licensed under the Eclipse Public License -v 1.0 (EPL)
 http://www.opensource.org/licenses/eclipse-1.0.txt
 '''
 
-import sys, os, socket, subprocess, threading, platform
-import time, struct, traceback, getopt, wave, tempfile
-import optparse
+import sys, os, threading, platform
+import time, traceback, wave
 
 from pydub import AudioSegment
 from pydub.silence import *
@@ -61,8 +60,10 @@ class CloudSpeechRecogBase(threading.Thread):
       self._buffer=b''.join([self._buffer, data])
 
       if len(self._buffer) > self._min_buflen:
-        audio=AudioSegment(self._buffer, sample_width=self._sample_width, channels=self._channels, frame_rate=self._frame_rate)
-        chunks=detect_nonsilent(audio, min_silence_len=self._min_silence, silence_thresh=self._silence_thr)
+        audio = AudioSegment(self._buffer, sample_width=self._sample_width,
+                           channels=self._channels, frame_rate=self._frame_rate)
+        chunks = detect_nonsilent(audio, min_silence_len=self._min_silence,
+                           silence_thresh=self._silence_thr)
 
         if chunks :
           if not self._audio :

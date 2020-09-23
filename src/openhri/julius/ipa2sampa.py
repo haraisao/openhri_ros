@@ -16,8 +16,8 @@ http://www.opensource.org/licenses/eclipse-1.0.txt
 import re
 
 class ipa2sampa:
-    def __init__(self):
-        self._dict = {
+  def __init__(self):
+    self._dict = {
             u'‖': ' ||',
             u' ': ' oeh',
             u'.': '  ',
@@ -243,32 +243,34 @@ class ipa2sampa:
             u'β': ' B',
             u'θ': ' T',
             u'χ': ' x',
-            }
+        }
 
-    def extend(self, ipa, sampa):
-        # not implemented
-        pass
+  def extend(self, ipa, sampa):
+    # not implemented
+    pass
 
-    def convert(self, text):
-        ret = ''
-        try:
-            ret = ''.join(map(lambda m: self._dict[m], text))
-        except KeyError:
-            print "found non-ipa symbol in " + text
-        return ret.strip(' ')
+  def convert(self, text):
+    ret = ''
+    try:
+      ret = ''.join(map(lambda m: self._dict[m], text))
+    except KeyError:
+      print "found non-ipa symbol in " + text
+    return ret.strip(' ')
 
+#
+#
 def main():
-    import sys, codecs, parsesrgs
-    sys.stdin = codecs.getreader('utf-8')(sys.stdin)
-    sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
-    i2s = ipa2sampa()
-    pls = parsesrgs.PLS()
-    pls.parse([sys.argv[1],])
-    for i, s in pls._alphabet.iteritems():
-        i2s.extend(i, s)
-    for k in pls._dict.keys():
-        for p in pls._dict[k]:
-            print k + ": " + p + " -> " + i2s.convert(p)
+  import sys, codecs, parsesrgs
+  sys.stdin = codecs.getreader('utf-8')(sys.stdin)
+  sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+  i2s = ipa2sampa()
+  pls = parsesrgs.PLS()
+  pls.parse([sys.argv[1],])
+  for i, s in pls._alphabet.iteritems():
+    i2s.extend(i, s)
+  for k in pls._dict.keys():
+    for p in pls._dict[k]:
+      print k + ": " + p + " -> " + i2s.convert(p)
             
 if __name__ == '__main__':
     main()

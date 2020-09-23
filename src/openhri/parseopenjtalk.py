@@ -17,48 +17,59 @@ import sys
 from io import open
 
 class parseopenjtalk:
-    def __init__(self):
-        self._durations = []
+  #
+  #
+  def __init__(self):
+    self._durations = []
 
-    def parse(self, fname):
-        f = open(fname, 'r', encoding='utf-8')
+  #
+  #
+  def parse(self, fname):
+    f = open(fname, 'r', encoding='utf-8')
+    f_duration = False
+    for l in f:
+      l = l.strip(' \n')
+      if l == '[Output label]':
+        f_duration = True
+        continue
+      elif l == '':
         f_duration = False
-        for l in f:
-            l = l.strip(' \n')
-            if l == '[Output label]':
-                f_duration = True
-                continue
-            elif l == '':
-                f_duration = False
-                continue
-            if f_duration:
-                try:
-                    (btime, etime, v) = l.split(' ')
-                    vv = v.split(':')[0].split('-')[1].split('+')[0]
-                    self._durations.append((int(btime), int(etime), vv))
-                except:
-                    pass
+        continue
+      if f_duration:
+        try:
+          (btime, etime, v) = l.split(' ')
+          vv = v.split(':')[0].split('-')[1].split('+')[0]
+          self._durations.append((int(btime), int(etime), vv))
+        except:
+          pass
+    return
 
-    def parse2(self, v):
-        for l in v.split('\n'):
-            try:
-                (btime, etime, v) = l.split(' ')
-                vv = v.split(':')[0].split('-')[1].split('+')[0]
-                self._durations.append((int(btime), int(etime), vv))
-            except:
-                pass
+  #
+  #
+  def parse2(self, v):
+    for l in v.split('\n'):
+      try:
+        (btime, etime, v) = l.split(' ')
+        vv = v.split(':')[0].split('-')[1].split('+')[0]
+        self._durations.append((int(btime), int(etime), vv))
+      except:
+        pass
+    return
 
-    def toseg(self):
-        s = '#\n'
-        for d in self._durations:
-            t = float(d[1]-d[0])/1000000
-            s += '%f 125 %s\n' % (t, d[2])
-        return s
-
+  #
+  #
+  def toseg(self):
+    s = '#\n'
+    for d in self._durations:
+      t = float(d[1]-d[0])/1000000
+      s += '%f 125 %s\n' % (t, d[2])
+    return s
+#
+#
 def main():
-    d = parseopenjtalk()
-    d.parse(sys.argv[1])
-    print (d.toseg())
+  d = parseopenjtalk()
+  d.parse(sys.argv[1])
+  print (d.toseg())
 
 if __name__=='__main__':
     main()

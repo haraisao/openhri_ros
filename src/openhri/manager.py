@@ -51,6 +51,9 @@ class OpenHRI_Component(object):
   #
   #  bindParameter
   def bindParameter(self, name, var, value, func=None):
+    if rospy.has_param(name):
+      var = [ rospy.get_param(name) ]
+      return
     try:
       if self._config['Default'][name] :
         var = [ self._config['Default'][name] ]
@@ -115,7 +118,8 @@ class OpenHRI_Manager(object):
   #  Constructor
   #
   def __init__(self, name='openhri_manager', conf_name='openhri.conf'):
-    self._parser = MyParser(version=__version__, usage=__usage__, description=__doc__)
+    self._parser = OpenHRI_Parser(version=__version__,
+                                  usage=__usage__, description=__doc__)
     addmanageropts(self._parser)
     self.add_options(self._parser)
 

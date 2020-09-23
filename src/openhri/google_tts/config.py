@@ -32,7 +32,9 @@ import configparser
 #
 #
 class config():
-  def __init__(self, hri_dir="", config_name='google_tts.conf', config_file=None):
+  def __init__(self, hri_dir="", config_name='google_tts.conf',
+               config_file=None):
+
     self._platform = platform.system()
 
     if self._platform != "Windows":

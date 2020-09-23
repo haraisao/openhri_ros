@@ -830,8 +830,6 @@ def main():
   return
 
 
-#  g_manager.start()
-
 #
 #  Main
 #

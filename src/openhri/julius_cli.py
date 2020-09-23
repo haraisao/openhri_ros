@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, os, socket, subprocess, signal, threading, platform
-import time, struct, traceback, locale, codecs, getopt, wave, tempfile
-import optparse
+import sys, os
+import time, traceback
 
 import json
 
@@ -59,7 +58,9 @@ class JuliusCli(object):
       print (traceback.format_exc())
       return ["Error"]
 
-
+#
+#
+#
 def show_result(result):
   try:
     res = json.loads(result)

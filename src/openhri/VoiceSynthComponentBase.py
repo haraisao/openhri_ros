@@ -22,7 +22,6 @@ http://www.opensource.org/licenses/eclipse-1.0.txt
 import os
 import sys
 import time
-import signal
 import tempfile
 import traceback
 import platform

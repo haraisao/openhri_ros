@@ -20,8 +20,8 @@ http://www.opensource.org/licenses/eclipse-1.0.txt
 import re
 
 class hiragana2phoneme:
-    def __init__(self):
-        self._dict1 = {
+  def __init__(self):
+    self._dict1 = {
             u'でぃ': ' d i',
             u'てぃ': ' t i',
             u'すぃ': ' s i',
@@ -70,8 +70,8 @@ class hiragana2phoneme:
             u'ふぃ': ' f i',
             u'ふぇ': ' f e',
             u'ふぉ': ' f o'
-        }
-        self._dict2 = {
+    }
+    self._dict2 = {
             u'あ': ' a',
             u'い': ' i',
             u'う': ' u',
@@ -146,17 +146,22 @@ class hiragana2phoneme:
             u'ー': ':',
             u'を': ' o',
             u'、': ' sp'
-        }
-        self._regex1 = re.compile(u"(%s)" % u"|".join(map(re.escape, self._dict1.keys())))
-        self._regex2 = re.compile(u"(%s)" % u"|".join(map(re.escape, self._dict2.keys())))
+    }
+    self._regex1 = re.compile(u"(%s)" % u"|".join(map(re.escape, self._dict1.keys())))
+    self._regex2 = re.compile(u"(%s)" % u"|".join(map(re.escape, self._dict2.keys())))
 
-    def convert(self, text):
-        ret = text
-        ret = self._regex1.sub(lambda m: self._dict1[m.string[m.start():m.end()]], ret) 
-        ret = self._regex2.sub(lambda m: self._dict2[m.string[m.start():m.end()]], ret) 
-        # clear all non alphabets
-        ret = re.sub(r'[^a-zA-Z :]', r'', ret)
-        return ret.strip(" ")
+  #
+  #
+  def convert(self, text):
+    ret=text
+    ret=self._regex1.sub(lambda m: self._dict1[m.string[m.start():m.end()]],ret)
+    ret=self._regex2.sub(lambda m: self._dict2[m.string[m.start():m.end()]],ret) 
+    # clear all non alphabets
+    ret = re.sub(r'[^a-zA-Z :]', r'', ret)
+    return ret.strip(" ")
+
+#
+#
 
 def main():
     import sys, codecs
@@ -164,17 +169,19 @@ def main():
     sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
     h = hiragana2phoneme()
     if len(sys.argv) == 2:
-        f = open(sys.argv[1])
-        for l in f:
-            for w in l.decode("utf-8").strip("\n").split(" "):
-                if w == "<s>":
-                    print ("<s>\t[]\tsilB")
-                elif w == "</s>":
-                    print ("</s>\t[]\tsilE")
-                else:
-                    print ("%s\t[%s]\t%s" % (w, w, h.convert(w)))
+      f = open(sys.argv[1])
+      for l in f:
+        for w in l.decode("utf-8").strip("\n").split(" "):
+          if w == "<s>":
+            print ("<s>\t[]\tsilB")
+          elif w == "</s>":
+            print ("</s>\t[]\tsilE")
+          else:
+            print ("%s\t[%s]\t%s" % (w, w, h.convert(w)))
     else:
         print (h.convert(u'おんそえのへんかんのてすとでーす'))
 
+#
+#
 if __name__ == '__main__':
     main()
