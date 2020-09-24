@@ -44,32 +44,26 @@ else:
 
 import urllib3 
 
-#
-#  
+#####################################################
+#  Google Speech-to-Text Wrapper
 #
 class GoogleSpeechRecogWrap(openhri.CloudSpeechRecogBase):
   #
   #  Constructor
   #
-  def __init__(self, rtc, language='ja-JP'):
+  def __init__(self, node, language='ja-JP'):
     openhri.CloudSpeechRecogBase.__init__(self, language)
 
     self._endpoint = 'http://www.google.com/speech-api/v2/recognize'
     self._http = urllib3.PoolManager()
+    self._lang=language
 
-    prop = rtc._manager._config
-    if prop.getProperty("google.speech.apikey") :
-      self._apikey = prop.getProperty("google.speech.apikey")
-
-    if prop.getProperty("google.speech.lang") :
-      self._lang=prop.getProperty("google.speech.lang")
-
-    if prop.getProperty("google.speech.logdir") :
-      self._logdir=prop.getProperty("google.speech.logdir")
-
-    if prop.getProperty("google.speech.save_wav") :
-      if prop.getProperty("google.speech.save_wav") == 'YES':
-        self._logger = True
+    self._config = node._manager._config
+    param=[""]
+    self._apikey=self.bindParameter("google.speech.apikey", param, None)
+    #self._lang=self.bindParameter("google.speech.lang", param, language)
+    self.logdir=self.bindParameter("google.speech.logdir", param, None)
+    self._logger=self.bindParameter("google.speech.logdir", param, False)
 
     if not self._apikey :
       try:
@@ -77,8 +71,6 @@ class GoogleSpeechRecogWrap(openhri.CloudSpeechRecogBase):
       except:
         pass
         
-
-
   #
   #  Set ApiKey
   #
@@ -109,7 +101,7 @@ class GoogleSpeechRecogWrap(openhri.CloudSpeechRecogBase):
       print (traceback.format_exc())
       return ["Error"]
 
-#
+#####################################################
 #  GoogleSpeechRecog Class
 #
 class GoogleSpeechRecog(openhri.OpenHRI_Component):
@@ -126,7 +118,6 @@ class GoogleSpeechRecog(openhri.OpenHRI_Component):
     self._min_buflen =  [ 8000 ]
     self._audio_topic = "/audio_capture/audio"
 
-
   #
   #  OnInitialize
   #
@@ -136,15 +127,11 @@ class GoogleSpeechRecog(openhri.OpenHRI_Component):
 
     #
     # Read parameters
-    prop = self._manager._config
-    if prop.getProperty("google.speech.min_silence") :
-      self._min_silence = [ int(prop.getProperty("google.speech.min_silence")) ]
-    if prop.getProperty("google.speech.silence_thr") :
-      self._silence_thr = [ int(prop.getProperty("google.speech.silence_thr")) ]
-    if prop.getProperty("google.speech.min_buflen") :
-      self._min_buflen = [ int(prop.getProperty("google.speech.min_buflen")) ]
-    if prop.getProperty("google.speech.audio_topic") :
-      self._audio_topic = prop.getProperty("google.speech.audio_topic")
+    self.bindParameter("google.speech.lang", self._lang, 'ja-JP')
+    self.bindParameter("google.speech.min_silence",self._min_silence,"200",int)
+    self.bindParameter("google.speech.silence_thr",self._silence_thr,"-20",int)
+    self.bindParameter("google.speech.min_buflen", self._min_buflen,"8000",int)
+    self.bindParameter("google.speech.audio_topic",self._audio_topic,"/audio_capture/audio")
 
     #
     # create inport for audio stream
@@ -259,7 +246,7 @@ class GoogleSpeechRecogManager(openhri.OpenHRI_Manager):
     self._config = config(config_file=self._opts.configfile)
 
   #
-  #  Initialize rtc
+  #  Initialize node
   #
   def moduleInit(self):
     self._comp['GoogleAsr'] = self.create_component(GoogleSpeechRecog)

@@ -91,10 +91,10 @@ class JuliusCliRos(openhri.OpenHRI_Component):
     #
     self.bindParameter("lang", self._lang, "jp")
     self.bindParameter("julius_host", self._julius_host, "localhost")
-    self.bindParameter("julius_port", self._julius_port, "1000")
-    self.bindParameter("min_silence", self._min_silence, "200")
-    self.bindParameter("silence_thr", self._silence_thr, "-20")
-    self.bindParameter("min_buflen", self._min_buflen, "8000")
+    self.bindParameter("julius_port", self._julius_port, "1000", int)
+    self.bindParameter("min_silence", self._min_silence, "200", int)
+    self.bindParameter("silence_thr", self._silence_thr, "-20", int)
+    self.bindParameter("min_buflen", self._min_buflen, "8000", int)
     
     self.bindParameter("audio_topic", self._audio_topic, "/audio_capture/audio")
 

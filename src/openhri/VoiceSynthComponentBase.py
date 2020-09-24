@@ -27,7 +27,7 @@ import traceback
 import platform
 import wave
 
-from manager import *
+from core import *
 
 import rospy
 from std_msgs.msg import String
@@ -46,7 +46,7 @@ def getCurrentTime():
 #
 #   Voice Synthesizer Base Class
 #
-class VoiceSynthBase(object):
+class VoiceSynthBase(ros_object):
   #
   #  Constructor
   #

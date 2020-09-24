@@ -31,7 +31,7 @@ import re
 
 from openhri.openjtalk.config import config
 import openhri
-from openhri.utils import getHriDir
+from openhri.utils import getHriDir,native_path
 
 import rospy
 
@@ -49,24 +49,24 @@ open_jtalk - The Japanese TTS system "Open JTalk"
 
   usage:
        open_jtalk [ options ] [ infile ]
-  options:                                                                   [  def][ min-- max]
-    -x  dir        : dictionary directory                                    [  N/A]
-    -m  htsvoice   : HTS voice files                                         [  N/A]
-    -ow s          : filename of output wav audio (generated speech)         [  N/A]
-    -ot s          : filename of output trace information                    [  N/A]
-    -s  i          : sampling frequency                                      [ auto][   1--    ]
-    -p  i          : frame period (point)                                    [ auto][   1--    ]
-    -a  f          : all-pass constant                                       [ auto][ 0.0-- 1.0]
-    -b  f          : postfiltering coefficient                               [  0.0][ 0.0-- 1.0]
-    -r  f          : speech speed rate                                       [  1.0][ 0.0--    ]
-    -fm f          : additional half-tone                                    [  0.0][    --    ]
-    -u  f          : voiced/unvoiced threshold                               [  0.5][ 0.0-- 1.0]
-    -jm f          : weight of GV for spectrum                               [  1.0][ 0.0--    ]
-    -jf f          : weight of GV for log F0                                 [  1.0][ 0.0--    ]
-    -g  f          : volume (dB)                                             [  0.0][    --    ]
-    -z  i          : audio buffer size (if i==0, turn off)                   [    0][   0--    ]
+  options:                                                    [ def][ min-- max]
+    -x  dir      : dictionary directory                       [ N/A]
+    -m  htsvoice : HTS voice files                            [ N/A]
+    -ow s        : filename of output wav audio (generated speech) [ N/A]
+    -ot s        : filename of output trace information       [ N/A]
+    -s  i        : sampling frequency                         [auto][   1--    ]
+    -p  i        : frame period (point)                       [auto][   1--    ]
+    -a  f        : all-pass constant                          [auto][ 0.0-- 1.0]
+    -b  f        : postfiltering coefficient                  [ 0.0][ 0.0-- 1.0]
+    -r  f        : speech speed rate                          [ 1.0][ 0.0--    ]
+    -fm f        : additional half-tone                       [ 0.0][    --    ]
+    -u  f        : voiced/unvoiced threshold                  [ 0.5][ 0.0-- 1.0]
+    -jm f        : weight of GV for spectrum                  [ 1.0][ 0.0--    ]
+    -jf f        : weight of GV for log F0                    [ 1.0][ 0.0--    ]
+    -g  f        : volume (dB)                                [ 0.0][    --    ]
+    -z  i        : audio buffer size (if i==0, turn off)      [   0][   0--    ]
   infile:
-    text file                                                                [stdin]
+    text file                                                 [stdin]
 '''
 
 #### for python2
@@ -110,40 +110,40 @@ class OpenJTalkWrap(openhri.VoiceSynthBase):
 
     self._basedir = getHriDir()
 
-    if prop.getProperty("openjtalk.top_dir") :
-      top_dir = prop.getProperty("openjtalk.top_dir")
+    self._config = prop
+    top_dir = self.bindParameter("openjtalk.top_dir", None, "")
+    if top_dir :
       top_dir = re.sub('^%d0', self._basedir[:2], top_dir)
-      self._conf.openjtalk_top(top_dir.replace('/', os.path.sep))
+      self._conf.openjtalk_top(native_path(top_dir))
 
-    if prop.getProperty("openjtalk.sox_dir") :
-      sox_dir = prop.getProperty("openjtalk.sox_dir")
+    sox_dir = self.bindParameter("openjtalk.sox_dir", None, "")
+    if sox_dir :
       sox_dir = re.sub('^%d0', self._basedir[:2], sox_dir)
-      self._conf.sox_top(sox_dir.replace('/', os.path.sep))
+      self._conf.sox_top(native_path(sox_dir))
 
-    if prop.getProperty("openjtalk.phonemodel_male_ja") :
-      self._conf._openjtalk_phonemodel_male_ja=prop.getProperty("openjtalk.phonemodel_male_ja")
+    male_dir = self.bindParameter("openjtalk.phonemodel_male_ja", None, "")
+    if male_dir :
+      self._conf._openjtalk_phonemodel_male_ja=make_dir
 
-    if prop.getProperty("openjtalk.phonemodel_female_ja") :
-      self._conf._openjtalk_phonemodel_female_ja=prop.getProperty("openjtalk.phonemodel_female_ja")
+    female_dir = self.bindParameter("openjtalk.phonemodel_female_ja", None, "")
+    if female_dir :
+      self._conf._openjtalk_phonemodel_female_ja=female_dir
 
+    #
+    # get copyright infomationn
+    self._copyrights = []
     cmdarg = [ self._conf._openjtalk_bin ]
-
-    self._proc = subprocess.Popen(cmdarg, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-
+    self._proc = subprocess.Popen(cmdarg, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     try:
       stdoutstr, stderrstr = self._proc.communicate()
+      for l in stderrstr.decode('utf-8').replace('\r', '').split('\n\n'):
+        if l.count('All rights reserved.') > 0:
+          self._copyrights.append(l)
     except:
       print("Error in self._proc.communicate()")
 
-    #
-    #  Read Copyright Files of Phonemodels
-    #
-    self._copyrights = []
-    for l in stderrstr.decode('utf-8').replace('\r', '').split('\n\n'):
-      if l.count('All rights reserved.') > 0:
-        self._copyrights.append(l)
 
-    #
+    ##################################
     #  read copyright
     self._copyrights.append(read_file_contents('hts_voice_copyright.txt'))
     self._copyrights.append(read_file_contents('mmdagent_mei_copyright.txt'))
@@ -282,6 +282,16 @@ class OpenJTalkRos(openhri.VoiceSynthComponentBase):
   #
   def __init__(self, manager):
     openhri.VoiceSynthComponentBase.__init__(self, manager)
+    self._cachesize=[1]
+    self._sampling_rate=[0]
+    self._all_pass = [-1.0]
+    self._postfiltering_coefficent = [0.0]
+    self._speed_rate=[1.0]
+    self._addtional_half_tone = [0.0,]
+    self._threshold = [0.5,]
+    self._gv_spectrum = [1.0,]
+    self._gv_log_f0 = [1.0,]
+    self._volume = [0.0]
 
   #
   #  OnInitialize
@@ -289,46 +299,22 @@ class OpenJTalkRos(openhri.VoiceSynthComponentBase):
   def onInitialize(self):
     openhri.VoiceSynthComponentBase.onInitialize(self)
 
-    self._cachesize=[1]
-    self.bindParameter("cachesize", self._cachesize, "1")
+    self.bindParameter("cachesize", self._cachesize, "1", int)
+    self.bindParameter("sampling_rate", self._sampling_rate, "0", int)
+    self.bindParameter("all_pass", self._all_pass, "-1.0", float)
+    self.bindParameter("postfiltering_coefficent", self._postfiltering_coefficent, "0.0",float)
 
-    self._sampling_rate=[0]
-    self.bindParameter("sampling_rate", self._sampling_rate, "0")
-    self._all_pass = [-1.0]
-    self.bindParameter("all_pass", self._all_pass, "-1.0")
-
-    self._postfiltering_coefficent = [0.0]
-    self.bindParameter("postfiltering_coefficent", self._postfiltering_coefficent, "0.0")
-
-    self._speed_rate=[1.0]
-    self.bindParameter("speed_rate", self._speed_rate, "1.0")
-
-    self._addtional_half_tone = [0.0,]
-    self.bindParameter("half_tone", self._addtional_half_tone, "0.0")
-
-    self._threshold = [0.5,]
-    self.bindParameter("voice_unvoice_threshold", self._threshold, "0.5")
-
-    self._gv_spectrum = [1.0,]
-    self.bindParameter("gv_spectrum", self._gv_spectrum, "1.0")
-
-    self._gv_log_f0 = [1.0,]
-    self.bindParameter("gv_log_f0", self._gv_log_f0, "1.0")
-
-    self._volume = [0.0]
-    self.bindParameter("volume", self._volume, "0.0")
+    self.bindParameter("speed_rate", self._speed_rate, "1.0",float)
+    self.bindParameter("half_tone", self._addtional_half_tone, "0.0",float)
+    self.bindParameter("voice_unvoice_threshold", self._threshold, "0.5",float)
+    self.bindParameter("gv_spectrum", self._gv_spectrum, "1.0",float)
+    self.bindParameter("gv_log_f0", self._gv_log_f0, "1.0",float)
+    self.bindParameter("volume", self._volume, "0.0",float)
 
 
-    #self._wrap = OpenJTalkWrap(self._properties)
-    self._wrap = OpenJTalkWrap(self._manager._config)
-
-
-    rospy.loginfo("This component depends on following softwares and datas:")
-    rospy.loginfo('')
-    for c in self._wrap._copyrights:
-      for l in c.strip('\n').split('\n'):
-        rospy.loginfo('  '+l)
-      rospy.loginfo('')
+    self._wrap = OpenJTalkWrap(self._config)
+    self._copyrights = self._wrap._copyrights
+    self.show_copyrights()
 
     return True
   #

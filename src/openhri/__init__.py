@@ -1,8 +1,8 @@
 __version__ = "1.0.0"
 
+from core import *
 from CloudSpeechRecogBase import *
 from VoiceSynthComponentBase import *
-from manager import *
 from utils import *
 from parseopenjtalk import *
 from julius_cli import *

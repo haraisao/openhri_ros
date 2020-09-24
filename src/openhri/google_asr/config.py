@@ -62,6 +62,7 @@ class config():
     if config_file is None:
         config_file = os.path.join(hri_dir, 'etc', config_name)
 
+    print(config_file)
     # config
     if os.path.exists(config_file) :
       self._configfile = configparser.ConfigParser()

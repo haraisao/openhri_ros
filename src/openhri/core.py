@@ -21,10 +21,39 @@ from utils import *
 import rospy
 
 
+class ros_object(object):
+  #
+  #
+  def __init__(self):
+    self._config = None
+  #
+  #  bindParameter
+  def bindParameter(self, name, var=None, value="", func=None):
+    retval = value
+    if rospy.has_param("~"+name):
+      retval = rospy.get_param("~"+name)
+    else:
+      try:
+        #print(name, self._config.getProperty(name))
+        if self._config.getProperty(name) :
+          retval = self._config.getProperty(name)
+      except:
+        pass
+
+    if func : retval = func(retval)
+    try:
+      var[0] = retval
+    except:
+      pass
+
+    return retval
+
+
+
 #
 #   OpenHRI_Component Class
 #
-class OpenHRI_Component(object):
+class OpenHRI_Component(ros_object):
   #
   #  Constructor
   #
@@ -47,22 +76,6 @@ class OpenHRI_Component(object):
         rospy.loginfo('  '+l)
       rospy.loginfo('')
     return 
-
-  #
-  #  bindParameter
-  def bindParameter(self, name, var, value, func=None):
-    if rospy.has_param(name):
-      var = [ rospy.get_param(name) ]
-      return
-    try:
-      if self._config['Default'][name] :
-        var = [ self._config['Default'][name] ]
-        return
-    except:
-      pass
-
-    var = [ value ]
-    return
 
   #
   #  OnInitialize
@@ -113,7 +126,7 @@ def set_manager_info(version, usage, doc):
 #
 #  OpenHRI Manager Class
 #
-class OpenHRI_Manager(object):
+class OpenHRI_Manager(ros_object):
   #
   #  Constructor
   #
@@ -185,6 +198,7 @@ class OpenHRI_Manager(object):
       comp.onInitialize()
       return comp
     except:
+      traceback.print_exc()
       print("Fail to create component %s" % str(klass))
 
     return None

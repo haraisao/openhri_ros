@@ -573,7 +573,7 @@ class JuliusRos(openhri.OpenHRI_Component):
     #
     # Parameters
     self._jconf_file="main.jconf"
-    #self.bindParameter("jconf_file", self._jconf_file, "main.jconf")
+    self.bindParameter("jconf_file", self._jconf_file, "main.jconf")
 
     self.show_copyrights()
 

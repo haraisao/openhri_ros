@@ -1,6 +1,9 @@
 <launch>
  <include file="$(find audio_capture)/launch/capture_wave.launch" />
 
- <node pkg="openhri_ros" type="GoogleSpeechRecog.py" name="google_asr_ros" output="screen" />
+ <node pkg="openhri_ros" type="GoogleSpeechRecog.py"
+     name="google_asr_ros" output="screen" >
+   <param name="google.speech.min_silence" value="210" />
+ </node>
 
 </launch>

@@ -43,52 +43,33 @@ _EffectsProfile=('wearable', 'handset', 'headphone', 'small-bluetooth-speaker', 
 #
 #  
 #
-class GoogleTextToSpeechWrap(object):
+class GoogleTextToSpeechWrap(openhri.ros_object):
   #
   #  Constructor
   #
-  def __init__(self, rtc, language='ja-JP'):
+  def __init__(self, node, language='ja-JP'):
     self._endpoint = "https://texttospeech.googleapis.com/v1/text:synthesize"
-    self._lang = "ja-JP"
-    self._speekingRate=1.0
-    self._apikey = ""
-    self._ssmlGender='MALE'
-    self._voiceName='ja-JP-Wavenet-D'
-    #self._voiceName='ja-JP-Standard-A'
-    self._pitch=1.0
-    self._volumeGain=0
-    self._sampleRate=16000
-    self._effectsProfileId=None
+    self._http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED',
+                                     ca_certs=certifi.where())
 
-    self._http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+    self._config = node._manager._config
+    param=[""]
+    self._apikey = self.bindParameter("google.tts.apikey",param, "")
+    self._lang = self.bindParameter("google.tts.lang",param, "ja-JP")
+    self._speekingRate = self.bindParameter("google.tts.speekingRate",param, "1.0", float)
+    self._ssmlGender = self.bindParameter("google.tts.ssmlGender",param, "MALE")
+    self._voiceName = self.bindParameter("google.tts.voiceName",param, "ja-JP-Wavenet-D")
+    self._pitch = self.bindParameter("google.tts.pitch",param, "1.0", float)
+    self._volumeGain = self.bindParameter("google.tts.volumeGain",param, "0", float)
+    self._sampleRate = self.bindParameter("google.tts.sampleRate",param, "16000", int)
+    self._effectsProfileId = self.bindParameter("google.tts.effectsProfieId",param, None)
 
-    prop = rtc._manager._config
-    if prop.getProperty("google.tts.apikey") :
-      self._apikey = prop.getProperty("google.tts.apikey") 
+    if not self._apikey :
+      try:
+        self._apikey = openhri.get_apikey(os.environ['HOME']+'/.openhri/google_apikey.txt')
+      except:
+        pass
 
-    if prop.getProperty("google.tts.lang") :
-      self._lang=prop.getProperty("google.tts.lang")
-
-    if prop.getProperty("google.tts.speekingRate") :
-      self._speekingRate=prop.getProperty("google.tts.speekingRate")
-
-    if prop.getProperty("google.tts.ssmlGender") :
-      self._ssmlGender=prop.getProperty("google.tts.ssmlGender")
-
-    if prop.getProperty("google.tts.voiceName") :
-      self._voiceName=prop.getProperty("google.tts.voiceName")
-
-    if prop.getProperty("google.tts.pitch") :
-      self._pitch=prop.getProperty("google.tts.pitch")
-
-    if prop.getProperty("google.tts.volumeGain") :
-      self._volumeGain=prop.getProperty("google.tts.volumeGain")
-
-    if prop.getProperty("google.tts.sampleRate") :
-      self._sampleRate=prop.getProperty("google.tts.sampleRate")
-
-    if prop.getProperty("google.tts.effectsProfileId") :
-      self._effectsProfileId=prop.getProperty("google.tts.effectsProfileId")
   #
   #  Set ApiKey
   #
@@ -122,7 +103,7 @@ class GoogleTextToSpeechWrap(object):
         data['audioConfig']['effectsProfileId'] = self._effectsProfileId + "-class-device"
 
 
-    rospy.loginfo(data)
+    #rospy.loginfo(data)
     try:
       result = self._http.urlopen('POST',url, body=json.dumps(data).encode(), headers=headers)
       response = result.data
@@ -218,7 +199,7 @@ class GoogleTextToSpeechManager(openhri.OpenHRI_Manager):
     self._config = config(config_file=self._opts.configfile)
 
   #
-  #  Initialize rtc
+  #  Initialize node
   #
   def moduleInit(self):
     self._comp['GoogleTTS'] = self.create_component(GoogleTextToSpeechRos)
