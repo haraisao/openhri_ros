@@ -25,3 +25,7 @@ After getting the 'api_key', save it to ~/.openhri/google_apikey.txt
  * roslaunch openhri julius.launch
  * roslaunch openhri google_asr.launch
  * roslaunch openhri google_tts.launch
+ * roslaunch openhri openjtalk.launch
+ 
+ ### Information
+ for more Japanese infomation, please access to my homepage; http://hara-jp.com/_default/ja/Software/openhri_ros.html
