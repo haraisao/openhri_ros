@@ -549,6 +549,11 @@ class JuliusRos(openhri.OpenHRI_Component):
     self._j = None
     self._mode = 'grammar'
     self.params = {}
+    self._audio_topic = '/audio_capture/audio'
+    self._result_topic = '/julius/result'
+    self._result_raw_topic = '/julius/result_raw'
+    self._result_threshold = 0.5
+    self._jconf_file="main.jconf"
 
     self._properties = None
     self._grammar_name=grammar
@@ -567,13 +572,17 @@ class JuliusRos(openhri.OpenHRI_Component):
 
     ###############
     #  setup ports
-    self._audio_sub = rospy.Subscriber('/audio_capture/audio', AudioData, self.onData)
-    self._julius_result = rospy.Publisher('/julius/result', String, queue_size=10)
+    self._audio_sub = rospy.Subscriber(self._audio_topic, AudioData, self.onData)
+    self._julius_result = rospy.Publisher(self._result_topic, String, queue_size=10)
+    self._julius_raw_result = rospy.Publisher(self._result_raw_topic, String, queue_size=10)
+
 
     #
     # Parameters
-    self._jconf_file="main.jconf"
-    self.bindParameter("jconf_file", self._jconf_file, "main.jconf")
+    self._jconf_file=self.bindParameter("jconf_file", None, "main.jconf")
+    self._audio_topic=self.bindParameter("audio_topic", None, self._audio_topic)
+    self._result_topic=self.bindParameter("result_topic", None, self._result_topic)
+    self._result_raw_topic=self.bindParameter("result_raw_topic", None, self._result_raw_topic)
 
     self.show_copyrights()
 
@@ -664,6 +673,7 @@ class JuliusRos(openhri.OpenHRI_Component):
         doc = Document()
         listentext = doc.createElement("listenText")
         doc.appendChild(listentext)
+        result_raw=None
         for s in d.findAll('shypo'):
           hypo = doc.createElement("data")
           score = 0
@@ -688,6 +698,11 @@ class JuliusRos(openhri.OpenHRI_Component):
           hypo.setAttribute("score", str(score))
           hypo.setAttribute("likelihood", s['score'])
           hypo.setAttribute("text", " ".join(text))
+
+          if (result_raw is None) and score > self._result_threshold:
+            result_raw = "".join(text).encode('utf-8')
+            print(result_raw)
+            self._julius_raw_result.publish(result_raw)
 
           if PYTHON_MAJOR_VERSION == 2:
             rospy.loginfo("#%s: %s (%s)" % (s['rank'], " ".join(text).encode('utf-8'), str(score)))

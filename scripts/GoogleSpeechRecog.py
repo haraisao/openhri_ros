@@ -117,6 +117,9 @@ class GoogleSpeechRecog(openhri.OpenHRI_Component):
     self._silence_thr = [ -20 ]
     self._min_buflen =  [ 8000 ]
     self._audio_topic = "/audio_capture/audio"
+    self._result_topic = "/asr/result"
+    self._result_raw_topic = "/asr/result_raw"
+    self._result_raw_threshold = 0.5
 
   #
   #  OnInitialize
@@ -131,7 +134,10 @@ class GoogleSpeechRecog(openhri.OpenHRI_Component):
     self.bindParameter("google.speech.min_silence",self._min_silence,"200",int)
     self.bindParameter("google.speech.silence_thr",self._silence_thr,"-20",int)
     self.bindParameter("google.speech.min_buflen", self._min_buflen,"8000",int)
-    self.bindParameter("google.speech.audio_topic",self._audio_topic,"/audio_capture/audio")
+    self._audio_topic = self.bindParameter("google.speech.audio_topic",None, self._audio_topic)
+    self._result_topic = self.bindParameter("google.speech.result_topic",None, self._result_topic)
+    self._result_raw_topic = self.bindParameter("google.speech.result_raw_topic",None, self._result_raw_topic)
+    self._result_raw_threshold = self.bindParameter("google.speech.result_raw_threshold",None, self._result_raw_threshold, float)
 
     #
     # create inport for audio stream
@@ -139,7 +145,8 @@ class GoogleSpeechRecog(openhri.OpenHRI_Component):
 
     #
     # create outport for result
-    self._asr_result = rospy.Publisher('/asr/result', String, queue_size=10)
+    self._asr_result = rospy.Publisher(self._result_topic, String, queue_size=10)
+    self._asr_result_raw = rospy.Publisher(self._result_raw_topic, String, queue_size=10)
 
     #
     #
@@ -204,6 +211,7 @@ class GoogleSpeechRecog(openhri.OpenHRI_Component):
         #print res;
         result=json.loads(res)
         i=0
+        result_raw=None
         for r in result['result'][0]['alternative']:
           i += 1
           rank = str(i)
@@ -219,6 +227,10 @@ class GoogleSpeechRecog(openhri.OpenHRI_Component):
           hypo.setAttribute("text", text)
           rospy.loginfo("#%s: %s (%s)" % (rank, text.encode('utf-8'), score))
           listentext.appendChild(hypo)
+
+          if ( result_raw is None ) and (float(score) > self._result_raw_threshold) :
+            result_raw = text.encode('utf-8')
+            self._asr_result_raw.publish(result_raw)
 
         listentext.setAttribute("state","Success")
 
