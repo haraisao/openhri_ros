@@ -1,5 +1,8 @@
 <launch>
- <include file="$(find audio_play)/launch/play_wave.launch" />
+ <include file="$(find audio_play)/launch/play.launch" >
+   <arg name="ns" value="audio_play" />
+   <arg name="format" value="wave" />
+ </include>
 
  <node pkg="openhri_ros" type="GoogleTextToSpeech.py" name="google_tts_ros" output="screen" />
 
