@@ -5,10 +5,12 @@ OpenHRI for ROS1
 This package is depend on following libraries:
   * Julius dictation-kit
   * OpenJtalk ( open-jtalk, open-jtalk-mecab-naist-jdic, hts-voice-nitech-jp-atr503-m001 )
+  * SoX(Sound eXchange)
   * python-pydub
   * python-urllib3
   * python-certifi
   * python-lxml
+  * python-configparser
   * ros-malodic-audio-capture
   * ros-malodic-audio-play
 
@@ -19,6 +21,7 @@ After getting the 'api_key', save it to ~/.openhri/google_apikey.txt
 ### Setup Julius
 1. Download dictation-kit from the official site.(https://osdn.net/di/julius/dictation-kit-4.5.zip)
 2. Unzip the archive on '/usr/local/julius/'
+2. Change the file permission of the 'bin/linux/\*' as '+x'
 
 
 ### Run 
