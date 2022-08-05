@@ -29,6 +29,11 @@ import rospy
 from audio_common_msgs.msg import AudioData
 from std_msgs.msg import String
 
+import json, base64
+
+import certifi
+import urllib3
+
 
 #
 #
@@ -54,10 +59,12 @@ class GoogleSpeechRecogWrap(openhri.CloudSpeechRecogBase):
   def __init__(self, node, language='ja-JP'):
     openhri.CloudSpeechRecogBase.__init__(self, language)
 
-    self._endpoint = 'http://www.google.com/speech-api/v2/recognize'
-    self._http = urllib3.PoolManager()
-    self._lang=language
+    self._endpoint = 'https://speech.googleapis.com/v1/speech:recognize'
+    #self._http = urllib3.PoolManager()
+    self._http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED',
+                                     ca_certs=certifi.where())
 
+    self._lang=language
     self._config = node._manager._config
     param=[""]
     self._apikey=self.bindParameter("google.speech.apikey", param, None)
@@ -82,24 +89,29 @@ class GoogleSpeechRecogWrap(openhri.CloudSpeechRecogBase):
   #  Request Google Voice Recognition
   #
   def request_speech_recog(self, data):
-    query_string = {'output': 'json', 'lang': self._lang, 'key': self._apikey}
-    url = '{0}?{1}'.format(self._endpoint, urlencode(query_string)) 
-    headers = {'Content-Type': 'audio/l16; rate=16000'}
+    url = self._endpoint+"?key="+self._apikey
+    headers = {  'Content-Type' : 'application/json; charset=utf-8' }
     voice_data = bytearray(data)
+    audio_data = base64.b64encode(data)
+
+    data = { "config" : { 'languageCode' : self._lang    # en-US, ja-JP, fr-FR
+                       , 'encoding' : 'LINEAR16'
+                       , 'sampleRateHertz' : 16000
+                       },
+             "audio"  : {
+                        'content' : audio_data.decode('utf-8')
+                      }
+            }
 
     try:
-      result = self._http.urlopen('POST', url, body=voice_data, headers=headers)
-      if result.status == 200:
-        response = result.data
-        return response.decode('utf-8').split()
-      else:
-        rospy.logerr("Fail to ASR: status = %d", result.status)
-        return ["Error"]
-
+      result = self._http.urlopen('POST',url, body=json.dumps(data).encode(), headers=headers)
+      response = result.data
+      return response.decode('utf-8')
+      #return response.decode('utf-8').split()
     except:
-      print (url)
-      print (traceback.format_exc())
+      rospy.logerr("Fail to ASR: status = %d", result.status)
       return ["Error"]
+
 
 #####################################################
 #  GoogleSpeechRecog Class
@@ -206,13 +218,13 @@ class GoogleSpeechRecog(openhri.OpenHRI_Component):
       listentext.setAttribute("state","RecognitionFailed")
     else:
       try:
-        data.pop(0)
-        res = ''.join(data)
+        #data.pop(0)
+        #res = ''.join(data)
         #print res;
-        result=json.loads(res)
+        result=json.loads(data)
         i=0
         result_raw=None
-        for r in result['result'][0]['alternative']:
+        for r in result['results'][0]['alternatives']:
           i += 1
           rank = str(i)
           if 'confidence' in r :
@@ -225,7 +237,7 @@ class GoogleSpeechRecog(openhri.OpenHRI_Component):
           hypo.setAttribute("score", score)
           hypo.setAttribute("likelihood", score)
           hypo.setAttribute("text", text)
-          rospy.loginfo("#%s: %s (%s)" % (rank, text.encode('utf-8'), score))
+          rospy.loginfo("#%s: %s (%s)" % (rank, text, score))
           listentext.appendChild(hypo)
 
           if ( result_raw is None ) and (float(score) > self._result_raw_threshold) :
