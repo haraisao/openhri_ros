@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 '''Google Speech Recognition component
@@ -70,7 +70,7 @@ class GoogleSpeechRecogWrap(openhri.CloudSpeechRecogBase):
         self._apikey = openhri.get_apikey(os.environ['HOME']+'/.openhri/google_apikey.txt')
       except:
         pass
-        
+    
   #
   #  Set ApiKey
   #

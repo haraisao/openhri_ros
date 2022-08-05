@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 '''Google Text to Speech component
@@ -104,6 +104,9 @@ class GoogleTextToSpeechWrap(openhri.ros_object):
 
 
     #rospy.loginfo(data)
+    rospy.loginfo(url)
+    rospy.loginfo(headers)
+    rospy.loginfo(data)
     try:
       result = self._http.urlopen('POST',url, body=json.dumps(data).encode(), headers=headers)
       response = result.data
@@ -164,12 +167,12 @@ class GoogleTextToSpeechRos(openhri.OpenHRI_Component):
   #
   def onData(self, data):
     if self._tts:
-      try:
-        txt=data.data.encode('raw-unicode-escape').decode()
-      except:
-        txt=data.data
+      #try:
+      #  txt=data.data.encode('raw-unicode-escape').decode()
+      #except:
+      #  txt=data.data
+      txt=data.data
       response = self._tts.text2speech(txt)
-        
       if response :
         result=json.loads(response.decode())
         try:
@@ -179,7 +182,7 @@ class GoogleTextToSpeechRos(openhri.OpenHRI_Component):
             self._outdata.data = audio[44:]
             self._outport.publish(self._outdata)
         except:
-            rospy.logerror("Error : no audia data")
+            rospy.logerr("Error : no audio data")
     return
 
 
