@@ -15,11 +15,11 @@ http://www.opensource.org/licenses/eclipse-1.0.txt
 
 import sqlite3
 
-from __init__ import __version__
+from .__init__ import __version__
 
-from config import config
-from parsejuliusdict import *
-from parsevoxforgedict import *
+from .config import config
+from .parsejuliusdict import *
+from .parsevoxforgedict import *
 
 #
 #  Lexicon Database class

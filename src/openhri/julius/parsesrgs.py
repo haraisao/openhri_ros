@@ -18,8 +18,8 @@ from lxml import etree
 
 from io import StringIO
 
-from config import config
-from lexicondb import *
+from .config import config
+from .lexicondb import *
 
 #
 #

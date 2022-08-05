@@ -7,7 +7,7 @@ import time, traceback
 import json
 
 import urllib
-import urllib2
+#import urllib2
 try:
   from urllib.parse import urlencode
 except:
@@ -49,8 +49,9 @@ class JuliusCli(object):
     voice_data = bytearray(data)
 
     try:
-      request = urllib2.Request(url, data=voice_data, headers=headers)
-      result = urllib2.urlopen(request)
+      #request = urllib2.Request(url, data=voice_data, headers=headers)
+      #result = urllib2.urlopen(request)
+      result = urllib.request.urlopen(url, data=voice_data, headers=headers)
       response = result.read()
       return response.decode('utf-8').split()
     except:

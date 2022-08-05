@@ -27,7 +27,7 @@ import traceback
 import platform
 import wave
 
-from core import *
+from .core import *
 
 import rospy
 from std_msgs.msg import String
@@ -38,7 +38,8 @@ from audio_common_msgs.msg import AudioData
 #
 def getCurrentTime():
   if platform.system() == 'Windows':
-    now = time.clock()
+    #now = time.clock()
+    now = time.process_time()
   else:
     now = time.time()
   return now
@@ -137,7 +138,8 @@ class VoiceSynthComponentBase(OpenHRI_Component):
     rospy.loginfo("Copyright (C) 2010-2011 Yosuke Matsusaka")
     rospy.loginfo("Copyright (C) 2017 Isao Hara")
     rospy.loginfo("Copyright (C) 2020 Isao Hara")
-    self._prevtime = time.clock()
+    #self._prevtime = time.clock()
+    self._prevtime = time.process_time()
 
     # configuration parameters
     self._samplerate = [16000,]
@@ -195,7 +197,8 @@ class VoiceSynthComponentBase(OpenHRI_Component):
     try:
       if self._is_active == True:
         #udata = data.data.encode('raw-unicode-escape').decode()
-        udata = data.data.decode('utf-8')
+        #udata = data.data.decode('utf-8')
+        udata=data.data
 
 
         #rospy.loginfo(udata + " " + str(self._samplerate[0]) + " " + self._character[0])

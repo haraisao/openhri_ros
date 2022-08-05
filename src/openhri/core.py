@@ -16,7 +16,7 @@ import time, traceback, getopt
 import optparse
 import re
 
-from utils import *
+from .utils import *
 
 import rospy
 

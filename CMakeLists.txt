@@ -29,6 +29,7 @@ catkin_install_python(PROGRAMS
   scripts/GoogleSpeechRecog.py
   scripts/GoogleTextToSpeech.py
   scripts/JuliusRos.py
+  scripts/OpenJTalk.py
 
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

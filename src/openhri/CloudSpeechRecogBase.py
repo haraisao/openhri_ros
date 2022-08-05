@@ -16,7 +16,7 @@ http://www.opensource.org/licenses/eclipse-1.0.txt
 import sys, os, threading, platform
 import time, traceback, wave
 
-from core import *
+from .core import *
 
 from pydub import AudioSegment
 from pydub.silence import *
