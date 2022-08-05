@@ -1,5 +1,5 @@
 # openhri_ros
-OpenHRI for ROS1
+OpenHRI for ROS1(melodic)
 
 ## Quick start
 This package is depend on following libraries:
