@@ -44,3 +44,4 @@ install(DIRECTORY etc/
 
 install(DIRECTORY examples/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/examples
+)
