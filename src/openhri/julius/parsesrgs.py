@@ -372,8 +372,10 @@ class SRGS:
           if len(p) == 0:
             unknownlexicon.append(v[1])
           dict[v[1]] = p
+
     if len(unknownlexicon) > 0:
-      raise KeyError("undefined lexicon: " + ",".join(unknownlexicon).encode('utf-8'))
+      raise KeyError("undefined lexicon: " + ",".join(unknownlexicon))
+
     dict2id = {}
 
     #print("--", dict)

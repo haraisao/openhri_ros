@@ -520,7 +520,8 @@ class JuliusWrap(threading.Thread):
   #  Switch grammer
   #
   def switchgrammar(self, name):
-    for g in self._activegrammars.keys():
+    keys=list(self._activegrammars.keys())
+    for g in keys:
       if g != name:
         self.deactivategrammar(g)
     self.activategrammar(name)
@@ -710,8 +711,9 @@ class JuliusRos(openhri.OpenHRI_Component):
 
           listentext.appendChild(hypo)
 
+
         data = doc.toxml(encoding="utf-8")
-        self._julius_result.publish(data)
+        self._julius_result.publish(data.decode('utf-8'))
 
         #rospy.loginfo(data.decode('utf-8', 'backslashreplace'))
         #self._outdata.data = data.decode('unicode_escape')
