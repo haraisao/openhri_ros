@@ -466,7 +466,6 @@ class JuliusWrap(threading.Thread):
   #   Add grammer to Julius Server
   #
   def addgrammar(self, data, name):
-    print(data)
     if self._firstgrammar == True:
       val="CHANGEGRAM %s\n" % (name,)
       self._modulesocket.sendall(val.encode('utf-8'))
@@ -701,7 +700,7 @@ class JuliusRos(openhri.OpenHRI_Component):
 
           if (result_raw is None) and score > self._result_threshold:
             result_raw = "".join(text).encode('utf-8')
-            print(result_raw)
+            #print(result_raw)
             self._julius_raw_result.publish(result_raw)
 
           if PYTHON_MAJOR_VERSION == 2:
@@ -744,6 +743,8 @@ class JuliusRos(openhri.OpenHRI_Component):
   #  Set Grammer
   #
   def setgrammarfile(self, gram, rebuid=False):
+    if not os.path.exists(gram) :
+       gram=os.path.join(self._config._basedir, gram)
     self._grammer = gram
     rospy.loginfo("compiling grammar: %s" % (gram,))
     self._srgs = SRGS(gram, self._properties, rebuid)
@@ -791,7 +792,6 @@ class JuliusRosManager(openhri.OpenHRI_Manager):
     self._rebuid_lexicon= self._opts.rebuild_lexicon
     self._grammars = self._args
     self._config = config(config_file=self._opts.configfile)
-
 
   #
   #

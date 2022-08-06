@@ -45,6 +45,7 @@ class config():
     else:
       self._basedir = utils.getHriDir()
 
+    print("=====", self._basedir)
     self._homedir = os.path.expanduser('~')
 
     self._configdir = os.path.join(self._homedir, '.openhri')
@@ -65,6 +66,7 @@ class config():
     #print("CONFIG:", os.path.join(self._basedir, 'etc', 'julius.cfg'))
     if config_file is None:
       config_file = os.path.join(self._basedir, 'etc', 'julius.conf')
+    print(config_file)
 
     if os.path.exists(config_file) :
       self._configfile = configparser.ConfigParser()

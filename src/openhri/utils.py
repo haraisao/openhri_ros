@@ -35,6 +35,11 @@ except:
   import tkinter 
   from tkinter import filedialog
 
+try:
+  import rospkg
+except:
+  rospkg=None
+
 #
 #
 def native_path(dirname):
@@ -230,6 +235,11 @@ def genmanagerargs(opt):
 def getHriDir():
   if 'OPENHRI_ROOT' in os.environ and os.environ['OPENHRI_ROOT']:
     return os.environ['OPENHRI_ROOT']
+
+  try:
+    return rospkg.RosPack().get_path("openhri_ros")
+  except:
+    pass
 
   if 'ROS_ROOT' in os.environ and os.environ['ROS_ROOT']:
     if os.path.exists(os.path.dirname(os.environ['ROS_ROOT'])+"/openhri"):

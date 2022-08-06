@@ -21,6 +21,7 @@ from io import StringIO
 from .config import config
 from .lexicondb import *
 
+__version__="1.0"
 #
 #
 #
@@ -339,14 +340,14 @@ class SRGS:
     if self._lang in ('jp', 'ja'):
       dict['<s>'] = ('silB',)
       dict['</s>'] = ('silE',)
-      from hiragana2phoneme import hiragana2phoneme
+      from .hiragana2phoneme import hiragana2phoneme
       conv = hiragana2phoneme()
-      from katakana2hiragana import katakana2hiragana
+      from .katakana2hiragana import katakana2hiragana
       conv2 = katakana2hiragana()
     elif self._lang == 'de':
       dict['<s>'] = ('sil',)
       dict['</s>'] = ('sil',)
-      from sampa2simon import ipa2simon
+      from .sampa2simon import ipa2simon
       conv = ipa2simon()
     else:
       dict['<s>'] = ('sil',)
