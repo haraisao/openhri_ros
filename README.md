@@ -12,6 +12,7 @@ This package is depend on following libraries:
   * python3-lxml
   * ros-noetic-audio-capture
   * ros-noetic-audio-play
+  * julius-voxforge
 
 ### Setup google api_key
 If you use google speech api, you need to get your 'api_key' from your Google Cloud Console.
