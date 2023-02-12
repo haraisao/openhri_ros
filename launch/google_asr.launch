@@ -1,5 +1,7 @@
 <launch>
- <include file="$(find audio_capture)/launch/capture_wave.launch" ns="audio_capture" />
+ <include file="$(find audio_capture)/launch/capture_wave.launch">
+  <arg name="ns" value="audio_capture" />
+ </include>
 
  <node pkg="openhri_ros" type="GoogleSpeechRecog.py"
      name="google_asr_ros" output="screen" >

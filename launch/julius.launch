@@ -1,7 +1,9 @@
 <launch>
  <arg name="gram" default="dictation" />
 
- <include file="$(find audio_capture)/launch/capture_wave.launch" ns="audio_capture"/>
+ <include file="$(find audio_capture)/launch/capture_wave.launch">
+  <arg name="ns" value="audio_capture"/>
+</include>
 
  <node pkg="openhri_ros" type="JuliusRos.py" name="julius_ros" args="$(arg gram)"  output="screen" />
 
